@@ -1,14 +1,16 @@
 # vivado-on-silicon-mac
 This is a tool for installing [Vivado™](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools.html) on Arm®-based Apple Silicon Macs in a Rosetta-enabled virtual machine. It is in no way associated with Xilinx or AMD.
 
-*Updated for 2024!*
+*Updated for 2025!*
 
 The supported versions are:
+- 2020.2
 - 2021.1
 - 2022.2
 - 2023.1
 - 2023.2
 - 2024.1
+- 2025.2
 
 Due to unexpected behaviour in Rosetta emulation, most versions of macOS 14 (including 14.5) are not supported. macOS 13 may work, but the above versions were tested on macOS 15.
 
@@ -94,6 +96,10 @@ This version of xvcd only supports the FT2232C chip. There are forks of this sof
 The repository's contents are licensed under the Creative Commons Zero v1.0 Universal license.
 
 Note that the scripts are configured such that you automatically agree to Xilinx' and 3rd party EULAs (which can be obtained by extracting the installer yourself) by running them. You also automatically agree to [Apple's software license agreement](https://www.apple.com/legal/sla/) for Rosetta 2.
+
+If you are installing Vivado version 2020.2:
+- The batch installer requires agreeing to the WebTalk terms.
+- For more information, see: https://docs.amd.com/r/2020.2-English/ug973-vivado-release-notes-install-license/Run-the-Installer.
 
 If you are installing Vivado version 2021.1:
 - WebTalk data collection is enabled, and you automatically agree to the corresponding terms.

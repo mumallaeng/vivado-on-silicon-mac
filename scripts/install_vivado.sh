@@ -26,11 +26,17 @@ eval "$install_bin_path --target /home/user/installer --noexec"
 # Get AuthToken by repeating the following command until it succeeds
 f_echo "Log into your Xilinx account to download the necessary files."
 export JAVA_TOOL_OPTIONS="-Xmx2g"
-while ! /home/user/installer/xsetup -b AuthTokenGen
-do
-	f_echo "Your account information seems to be wrong. Please try logging in again."
-	sleep 1
-done
+auth_key_path="/home/user/.Xilinx/wi_authentication_key"
+if [ -s "$auth_key_path" ]
+then
+    f_echo "Found an existing authentication token. Reusing it."
+else
+    while ! /home/user/installer/xsetup -b AuthTokenGen
+    do
+	    f_echo "Your account information seems to be wrong. Please try logging in again."
+	    sleep 1
+    done
+fi
 
 # Run installer
 f_echo "You successfully logged into your account. The installation will begin now."

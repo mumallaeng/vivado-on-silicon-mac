@@ -1,7 +1,9 @@
 # Container for running Vivado on M1/M2 macs
 # though it should work equally on Intel macs
 FROM --platform=linux/amd64 ubuntu:22.04
-RUN apt-get update && apt-get upgrade -y
+# Avoid a full distro upgrade during image build. It adds several minutes
+# under Rosetta emulation without materially helping the Vivado runtime.
+RUN apt-get update
 
 # Fix the error of build failing due to not having the frontend installed
 # This enviroment auto fallbacks to noninteractive mode, with the declaration following this guidance:

@@ -10,6 +10,29 @@ validate_macos
 extra_mount_args=()
 extra_env_args=()
 
+function append_bind_mount {
+	local mount_source="$1"
+	local mount_target="$2"
+	local mount_arg
+	local i
+
+	if [ -z "$mount_source" ] || [ -z "$mount_target" ] || [ ! -d "$mount_source" ]
+	then
+		return 0
+	fi
+
+	for (( i = 2; i <= ${#extra_mount_args}; i += 2 ))
+	do
+		mount_arg="${extra_mount_args[i]}"
+		if [[ "$mount_arg" == *"target=$mount_target"* ]]
+		then
+			return 0
+		fi
+	done
+
+	extra_mount_args+=(--mount "type=bind,source=$mount_source,target=$mount_target")
+}
+
 host_local_config="$HOME/.config/vivado-on-silicon-mac/local_config.sh"
 if [ -r "$host_local_config" ]
 then
@@ -22,7 +45,7 @@ fi
 # export VIVADO_EXTRA_MOUNT_TARGET="/home/user/project"
 if [ -n "$VIVADO_EXTRA_MOUNT_SOURCE" ] && [ -n "$VIVADO_EXTRA_MOUNT_TARGET" ] && [ -d "$VIVADO_EXTRA_MOUNT_SOURCE" ]
 then
-	extra_mount_args+=(--mount "type=bind,source=$VIVADO_EXTRA_MOUNT_SOURCE,target=$VIVADO_EXTRA_MOUNT_TARGET")
+	append_bind_mount "$VIVADO_EXTRA_MOUNT_SOURCE" "$VIVADO_EXTRA_MOUNT_TARGET"
 fi
 
 if [ -n "$VIVADO_BOARD_REPO_PATHS" ]

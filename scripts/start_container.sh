@@ -9,8 +9,8 @@ validate_macos
 extra_mount_args=()
 # Optional extra bind mount for local project folders.
 # Example:
-# export VIVADO_EXTRA_MOUNT_SOURCE="$HOME/git/TimerPiece"
-# export VIVADO_EXTRA_MOUNT_TARGET="/home/user/git/TimerPiece"
+# export VIVADO_EXTRA_MOUNT_SOURCE="$HOME/path/to/project"
+# export VIVADO_EXTRA_MOUNT_TARGET="/home/user/project"
 if [ -n "$VIVADO_EXTRA_MOUNT_SOURCE" ] && [ -n "$VIVADO_EXTRA_MOUNT_TARGET" ] && [ -d "$VIVADO_EXTRA_MOUNT_SOURCE" ]
 then
     extra_mount_args+=(--mount "type=bind,source=$VIVADO_EXTRA_MOUNT_SOURCE,target=$VIVADO_EXTRA_MOUNT_TARGET")

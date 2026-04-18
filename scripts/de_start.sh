@@ -14,6 +14,7 @@ vivado_dir=$(find_vivado_dir)
 # if Vivado is installed
 if [ -n "$vivado_dir" ]
 then
+	cd /home/user || exit 1
 	# Make Vivado connect to the xvcd server running on macOS
 	source "$vivado_dir/settings64.sh"
 	"$vivado_dir/bin/hw_server" -e "set auto-open-servers     xilinx-xvc:host.docker.internal:2542" &

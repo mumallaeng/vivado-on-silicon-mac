@@ -52,6 +52,11 @@ then
     extra_env_args+=(-e "VIVADO_BOARD_REPO_PATHS=$VIVADO_BOARD_REPO_PATHS")
 fi
 
+if [ -n "$VIVADO_ENABLE_HARDWARE_MANAGER" ]
+then
+    extra_env_args+=(-e "VIVADO_ENABLE_HARDWARE_MANAGER=$VIVADO_ENABLE_HARDWARE_MANAGER")
+fi
+
 # this is called when the container stops or ctrl+c is hit
 function stop_container {
     docker kill vivado_container > /dev/null 2>&1
@@ -78,17 +83,26 @@ sleep 7
 f_echo "Starting VNC viewer"
 vncpass=$( tr -d "\n\r\t " < "$script_dir/vncpasswd" )
 osascript -e "tell application \"Screen Sharing\" to GetURL \"vnc://user:$vncpass@localhost:5901\""
-f_echo "Running xvcd for USB forwarding..."
-# while vivado_container is running
-while [[ $(docker ps) == *vivado_container* ]]
-do
-    # if there is a running instance of xvcd
-    if pgrep -x "xvcd" > /dev/null
-    then
-        :
-    else
-        eval "$script_dir/xvcd/bin/xvcd > /dev/null 2>&1 &"
+if [ "${VIVADO_ENABLE_HARDWARE_MANAGER:-1}" = "0" ]
+then
+    f_echo "Hardware manager integration disabled. Skipping xvcd."
+    while [[ $(docker ps) == *vivado_container* ]]
+    do
         sleep 2
-    fi
-done
+    done
+else
+    f_echo "Running xvcd for USB forwarding..."
+    # while vivado_container is running
+    while [[ $(docker ps) == *vivado_container* ]]
+    do
+        # if there is a running instance of xvcd
+        if pgrep -x "xvcd" > /dev/null
+        then
+            :
+        else
+            eval "$script_dir/xvcd/bin/xvcd > /dev/null 2>&1 &"
+            sleep 2
+        fi
+    done
+fi
 stop_container

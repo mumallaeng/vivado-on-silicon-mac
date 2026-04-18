@@ -53,6 +53,11 @@ then
 	extra_env_args+=(-e "VIVADO_BOARD_REPO_PATHS=$VIVADO_BOARD_REPO_PATHS")
 fi
 
+if [ -n "$VIVADO_ENABLE_HARDWARE_MANAGER" ]
+then
+	extra_env_args+=(-e "VIVADO_ENABLE_HARDWARE_MANAGER=$VIVADO_ENABLE_HARDWARE_MANAGER")
+fi
+
 # Make sure permissions are right
 if [[ "$current_user" == "root" ]]
 then

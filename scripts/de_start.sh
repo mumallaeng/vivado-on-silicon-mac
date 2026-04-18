@@ -17,7 +17,7 @@ then
 	# Make Vivado connect to the xvcd server running on macOS
 	source "$vivado_dir/settings64.sh"
 	"$vivado_dir/bin/hw_server" -e "set auto-open-servers     xilinx-xvc:host.docker.internal:2542" &
-	"$vivado_dir/bin/vivado"
+	"$vivado_dir/bin/vivado" -source /home/user/scripts/vivado_startup.tcl
 else
 	f_echo "The installation is incomplete."
 	wait_for_user_input

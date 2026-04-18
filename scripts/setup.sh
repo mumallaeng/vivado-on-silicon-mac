@@ -8,6 +8,14 @@ source "$script_dir/header.sh"
 validate_macos
 
 extra_mount_args=()
+extra_env_args=()
+
+host_local_config="$HOME/.config/vivado-on-silicon-mac/local_config.sh"
+if [ -r "$host_local_config" ]
+then
+	source "$host_local_config"
+fi
+
 # Optional extra bind mount for local project folders.
 # Example:
 # export VIVADO_EXTRA_MOUNT_SOURCE="$HOME/path/to/project"
@@ -15,6 +23,11 @@ extra_mount_args=()
 if [ -n "$VIVADO_EXTRA_MOUNT_SOURCE" ] && [ -n "$VIVADO_EXTRA_MOUNT_TARGET" ] && [ -d "$VIVADO_EXTRA_MOUNT_SOURCE" ]
 then
 	extra_mount_args+=(--mount "type=bind,source=$VIVADO_EXTRA_MOUNT_SOURCE,target=$VIVADO_EXTRA_MOUNT_TARGET")
+fi
+
+if [ -n "$VIVADO_BOARD_REPO_PATHS" ]
+then
+	extra_env_args+=(-e "VIVADO_BOARD_REPO_PATHS=$VIVADO_BOARD_REPO_PATHS")
 fi
 
 # Make sure permissions are right
@@ -173,4 +186,4 @@ if docker ps -a --format '{{.Names}}' | grep -Fxq vivado_container
 then
     docker rm -f vivado_container > /dev/null 2>&1
 fi
-docker run --init -it --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/install_vivado.sh
+docker run --init -it --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/install_vivado.sh

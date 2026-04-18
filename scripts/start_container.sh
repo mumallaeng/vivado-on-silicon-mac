@@ -6,6 +6,13 @@ script_dir=$(dirname -- "$(readlink -nf $0)";)
 source "$script_dir/header.sh"
 validate_macos
 
+extra_mount_args=()
+timerpiece_dir="$HOME/git/TimerPiece"
+if [ -d "$timerpiece_dir" ]
+then
+    extra_mount_args+=(--mount "type=bind,source=$timerpiece_dir,target=/home/user/git/TimerPiece")
+fi
+
 # this is called when the container stops or ctrl+c is hit
 function stop_container {
     docker kill vivado_container > /dev/null 2>&1
@@ -26,7 +33,7 @@ fi
 killall xvcd > /dev/null 2>&1
 
 # run container
-docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/linux_start.sh &
+docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/linux_start.sh &
 f_echo "Started container"
 sleep 7
 f_echo "Starting VNC viewer"

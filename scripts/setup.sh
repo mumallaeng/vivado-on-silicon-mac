@@ -7,6 +7,13 @@ source "$script_dir/header.sh"
 # Make sure that the script is run in macOS and not the Docker container
 validate_macos
 
+extra_mount_args=()
+timerpiece_dir="$HOME/git/TimerPiece"
+if [ -d "$timerpiece_dir" ]
+then
+	extra_mount_args+=(--mount "type=bind,source=$timerpiece_dir,target=/home/user/git/TimerPiece")
+fi
+
 # Make sure permissions are right
 if [[ "$current_user" == "root" ]]
 then
@@ -163,4 +170,4 @@ if docker ps -a --format '{{.Names}}' | grep -Fxq vivado_container
 then
     docker rm -f vivado_container > /dev/null 2>&1
 fi
-docker run --init -it --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/install_vivado.sh
+docker run --init -it --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/install_vivado.sh

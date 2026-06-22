@@ -14,3 +14,27 @@ installer/
 .vnc/
 .xsession-errors
 scripts/install_bin
+
+# Local runtime artifacts
+.Xil/
+.swt/
+.bash_history
+.digilent_dvctbl.txt
+proxy.txt
+scripts/__pycache__/
+start_container.last.log
+openfpgaloader-xvc*.log
+tmp_xsetup_cfg/
+usage_statistics_webtalk.*
+hs_err_pid*.log
+vivado*.jou
+vivado*.log
+vivado*.str
+vivado*.debug
+*.backup.jou
+*.backup.log
+
+# Local Vivado projects belong outside this helper repo
+*.xpr
+*.hw/
+dedicated_cpu_0to10_55/

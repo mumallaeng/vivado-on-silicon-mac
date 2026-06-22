@@ -48,9 +48,27 @@ then
 	append_bind_mount "$VIVADO_EXTRA_MOUNT_SOURCE" "$VIVADO_EXTRA_MOUNT_TARGET"
 fi
 
-if [ -n "$VIVADO_BOARD_REPO_PATHS" ]
+resolved_board_repo_paths="${VIVADO_BOARD_REPO_PATHS:-}"
+local_board_repo_root="$script_dir/../local-board-repos"
+container_board_repo_root="/home/user/local-board-repos"
+if find "$local_board_repo_root" -mindepth 2 -maxdepth 4 -name board.xml -print -quit 2>/dev/null | grep -q .
 then
-	extra_env_args+=(-e "VIVADO_BOARD_REPO_PATHS=$VIVADO_BOARD_REPO_PATHS")
+	case ":$resolved_board_repo_paths:" in
+		*":$container_board_repo_root:"*)
+			;;
+		"::")
+			resolved_board_repo_paths="$container_board_repo_root"
+			;;
+		*)
+			resolved_board_repo_paths="${resolved_board_repo_paths}:$container_board_repo_root"
+			;;
+	esac
+fi
+
+if [ -n "$resolved_board_repo_paths" ]
+then
+	extra_env_args+=(-e "VIVADO_BOARD_REPO_PATHS=$resolved_board_repo_paths")
+	f_echo "Using board repositories: $resolved_board_repo_paths"
 fi
 
 if [ -n "$VIVADO_ENABLE_HARDWARE_MANAGER" ]

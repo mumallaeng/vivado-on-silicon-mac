@@ -47,9 +47,27 @@ then
     append_bind_mount "$VIVADO_EXTRA_MOUNT_SOURCE" "$VIVADO_EXTRA_MOUNT_TARGET"
 fi
 
-if [ -n "$VIVADO_BOARD_REPO_PATHS" ]
+resolved_board_repo_paths="${VIVADO_BOARD_REPO_PATHS:-}"
+local_board_repo_root="$script_dir/../local-board-repos"
+container_board_repo_root="/home/user/local-board-repos"
+if find "$local_board_repo_root" -mindepth 2 -maxdepth 4 -name board.xml -print -quit 2>/dev/null | grep -q .
 then
-    extra_env_args+=(-e "VIVADO_BOARD_REPO_PATHS=$VIVADO_BOARD_REPO_PATHS")
+    case ":$resolved_board_repo_paths:" in
+        *":$container_board_repo_root:"*)
+            ;;
+        "::")
+            resolved_board_repo_paths="$container_board_repo_root"
+            ;;
+        *)
+            resolved_board_repo_paths="${resolved_board_repo_paths}:$container_board_repo_root"
+            ;;
+    esac
+fi
+
+if [ -n "$resolved_board_repo_paths" ]
+then
+    extra_env_args+=(-e "VIVADO_BOARD_REPO_PATHS=$resolved_board_repo_paths")
+    f_echo "Using board repositories: $resolved_board_repo_paths"
 fi
 
 if [ -n "$VIVADO_ENABLE_HARDWARE_MANAGER" ]
@@ -93,7 +111,7 @@ fi
 killall xvcd > /dev/null 2>&1
 
 # run container
-docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H --preserve-env=VIVADO_VNC_RESOLUTION -u user bash /home/user/scripts/linux_start.sh &
+docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H --preserve-env=VIVADO_VNC_RESOLUTION,VIVADO_BOARD_REPO_PATHS -u user bash /home/user/scripts/linux_start.sh &
 f_echo "Started container"
 sleep 7
 f_echo "Starting VNC viewer"

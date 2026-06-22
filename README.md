@@ -47,6 +47,8 @@ inside the terminal. The container can be stopped by pressing `Ctrl-C` inside th
 
 If `scripts/vnc_resolution` contains `auto`, the container will match the current main display's "UI Looks like" size when it starts. Live resizing of an already running VNC session is not supported.
 
+If `local-board-repos/` contains custom board files such as `board.xml`, the startup scripts automatically add `/home/user/local-board-repos` to Vivado's `board.repoPaths`.
+
 USB flashing support is limited, see the "USB Connection" paragraph below.
 
 If you want to exchange files with the container, you need to store them inside the "vivado-on-silicon-mac-main" folder. Inside Vivado, the files will be accessible via the "/home/user" folder.
@@ -89,6 +91,7 @@ This version of xvcd only supports the FT2232C chip. There are forks of this sof
 - `linux_start.sh`: Docker container start script
 - `de_start.sh`: Script to be executed when the desktop environment has started
 - `cleanup.sh`: Removes Vivado and dotfiles.
+- `local-board-repos/`: optional custom board files that should be auto-added to Vivado's board repository search path
 - `xvcd`: [xvcd](https://github.com/tmbinc/xvcd) source and binary copy
 - `install_bin`: Full path to Vivado installation binary
 - `vnc_resolution`: Manually adjustable resolution of the container GUI, formatted like "widthxheight" or set to `auto` to follow the current main display size when the container starts

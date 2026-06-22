@@ -49,6 +49,8 @@ If `scripts/vnc_resolution` contains `auto`, the container will match the curren
 
 If `local-board-repos/` contains custom board files such as `board.xml`, the startup scripts automatically add `/home/user/local-board-repos` to Vivado's `board.repoPaths`.
 
+`VIVADO_XVC_BACKEND=openfpgaloader` switches the hardware bridge from the bundled `xvcd` binary to `openFPGALoader --xvc`, which is useful when the stock `xvcd` path cannot enumerate the FPGA chain correctly.
+
 USB flashing support is limited, see the "USB Connection" paragraph below.
 
 If you want to exchange files with the container, you need to store them inside the "vivado-on-silicon-mac-main" folder. Inside Vivado, the files will be accessible via the "/home/user" folder.
@@ -92,6 +94,7 @@ This version of xvcd only supports the FT2232C chip. There are forks of this sof
 - `de_start.sh`: Script to be executed when the desktop environment has started
 - `cleanup.sh`: Removes Vivado and dotfiles.
 - `local-board-repos/`: optional custom board files that should be auto-added to Vivado's board repository search path
+- `run_openfpgaloader_xvc_bridge.py`: keeps `openFPGALoader --xvc` alive behind a pseudo-terminal for hardware-manager use
 - `xvcd`: [xvcd](https://github.com/tmbinc/xvcd) source and binary copy
 - `install_bin`: Full path to Vivado installation binary
 - `vnc_resolution`: Manually adjustable resolution of the container GUI, formatted like "widthxheight" or set to `auto` to follow the current main display size when the container starts

@@ -45,6 +45,8 @@ Downloads/vivado-on-silicon-mac-main/scripts/start_container.sh
 ```
 inside the terminal. The container can be stopped by pressing `Ctrl-C` inside the terminal or by logging out inside the container.
 
+If `scripts/vnc_resolution` contains `auto`, the container will match the current main display's "UI Looks like" size when it starts. Live resizing of an already running VNC session is not supported.
+
 USB flashing support is limited, see the "USB Connection" paragraph below.
 
 If you want to exchange files with the container, you need to store them inside the "vivado-on-silicon-mac-main" folder. Inside Vivado, the files will be accessible via the "/home/user" folder.
@@ -89,7 +91,7 @@ This version of xvcd only supports the FT2232C chip. There are forks of this sof
 - `cleanup.sh`: Removes Vivado and dotfiles.
 - `xvcd`: [xvcd](https://github.com/tmbinc/xvcd) source and binary copy
 - `install_bin`: Full path to Vivado installation binary
-- `vnc_resolution`: Manually adjustable resolution of the container GUI, formatted like "widthxheight"
+- `vnc_resolution`: Manually adjustable resolution of the container GUI, formatted like "widthxheight" or set to `auto` to follow the current main display size when the container starts
 - `vncpasswd`: Password for the VNC connection. It is purposefully weak, as it serves no security function. The VNC server inside the container will not allow outside connections. The password can be changed manually nonetheless.
 
 ## License, copyright and trademark information

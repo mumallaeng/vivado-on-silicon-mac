@@ -11,7 +11,13 @@ validate_linux
 mkdir /home/user/.vnc &> /dev/null
 cat "$script_dir/vncpasswd" | vncpasswd -f > /home/user/.vnc/passwd
 
-vncserver -DisconnectClients -NeverShared -nocursor -geometry $(tr -d "\n\r\t " < "$script_dir/vnc_resolution") -SecurityTypes VncAuth -PasswordFile /home/user/.vnc/passwd -localhost no -verbose -fg -RawKeyboard -RemapKeys "0xffe9->0xff7e,0xffe7->0xff7e" -- LXDE
+vnc_resolution="${VIVADO_VNC_RESOLUTION:-$(read_vnc_resolution_setting)}"
+if ! is_valid_vnc_resolution "$vnc_resolution"
+then
+    vnc_resolution="$vnc_default_resolution"
+fi
+
+vncserver -DisconnectClients -NeverShared -nocursor -geometry "$vnc_resolution" -SecurityTypes VncAuth -PasswordFile /home/user/.vnc/passwd -localhost no -verbose -fg -RawKeyboard -RemapKeys "0xffe9->0xff7e,0xffe7->0xff7e" -- LXDE
 # explanation (see also TigerVNC manual):
 #
 # -DisconnectClients -NeverShared:

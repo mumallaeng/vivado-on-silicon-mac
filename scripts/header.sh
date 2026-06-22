@@ -46,6 +46,113 @@ function wait_for_user_input {
     read
 }
 
+function is_valid_vnc_resolution {
+    [[ "$1" =~ ^[0-9]+x[0-9]+$ ]]
+}
+
+function read_vnc_resolution_setting {
+    local resolution_file="${1:-$script_dir/vnc_resolution}"
+
+    if [ -r "$resolution_file" ]
+    then
+        tr -d "\n\r\t " < "$resolution_file"
+    fi
+}
+
+function detect_host_vnc_resolution {
+    local display_info resolution
+
+    validate_macos
+
+    display_info=$(system_profiler SPDisplaysDataType 2>/dev/null) || return 1
+    resolution=$(printf '%s\n' "$display_info" | awk '
+        BEGIN {
+            ui = ""
+            res = ""
+            first = ""
+            found = 0
+        }
+        /^        [^ ].*:$/ {
+            if ($0 !~ /^        Displays:$/) {
+                ui = ""
+                res = ""
+            }
+            next
+        }
+        /^          UI Looks like:/ {
+            ui = $0
+            sub(/^.*UI Looks like: /, "", ui)
+            sub(/ @.*/, "", ui)
+            gsub(/ /, "", ui)
+            if (first == "") {
+                first = ui
+            }
+            next
+        }
+        /^          Resolution:/ {
+            res = $0
+            sub(/^.*Resolution: /, "", res)
+            sub(/ Retina.*/, "", res)
+            sub(/ \(.*\)/, "", res)
+            gsub(/ /, "", res)
+            if (first == "") {
+                first = res
+            }
+            next
+        }
+        /^          Main Display: Yes$/ {
+            if (ui != "") {
+                found = 1
+                print ui
+                exit
+            }
+            if (res != "") {
+                found = 1
+                print res
+                exit
+            }
+        }
+        END {
+            if (!found && first != "") {
+                print first
+            }
+        }
+    ')
+
+    if is_valid_vnc_resolution "$resolution"
+    then
+        printf '%s\n' "$resolution"
+        return 0
+    fi
+
+    return 1
+}
+
+function resolve_vnc_resolution {
+    local requested_resolution="$1"
+    local requested_mode
+
+    if [ -z "$requested_resolution" ]
+    then
+        requested_resolution="$vnc_default_resolution"
+    fi
+
+    requested_mode=$(printf '%s' "$requested_resolution" | tr '[:upper:]' '[:lower:]')
+    if [ "$requested_mode" = "auto" ]
+    then
+        detect_host_vnc_resolution
+        return $?
+    fi
+
+    if is_valid_vnc_resolution "$requested_resolution"
+    then
+        printf '%s\n' "$requested_resolution"
+        return 0
+    fi
+
+    return 1
+}
+
 function start_docker {
     # check if Docker is installed
     if ! which docker &> /dev/null

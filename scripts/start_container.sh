@@ -57,6 +57,22 @@ then
     extra_env_args+=(-e "VIVADO_ENABLE_HARDWARE_MANAGER=$VIVADO_ENABLE_HARDWARE_MANAGER")
 fi
 
+requested_vnc_resolution="${VIVADO_VNC_RESOLUTION:-$(read_vnc_resolution_setting)}"
+requested_vnc_mode=$(printf '%s' "$requested_vnc_resolution" | tr '[:upper:]' '[:lower:]')
+if resolved_vnc_resolution=$(resolve_vnc_resolution "$requested_vnc_resolution")
+then
+    extra_env_args+=(-e "VIVADO_VNC_RESOLUTION=$resolved_vnc_resolution")
+    if [ "$requested_vnc_mode" = "auto" ]
+    then
+        f_echo "Using VNC resolution $resolved_vnc_resolution (auto-detected from the main display)"
+    else
+        f_echo "Using VNC resolution $resolved_vnc_resolution"
+    fi
+else
+    extra_env_args+=(-e "VIVADO_VNC_RESOLUTION=$vnc_default_resolution")
+    f_echo "Invalid VNC resolution setting '${requested_vnc_resolution:-<empty>}'. Falling back to $vnc_default_resolution."
+fi
+
 # this is called when the container stops or ctrl+c is hit
 function stop_container {
     docker kill vivado_container > /dev/null 2>&1
@@ -77,7 +93,7 @@ fi
 killall xvcd > /dev/null 2>&1
 
 # run container
-docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/linux_start.sh &
+docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H --preserve-env=VIVADO_VNC_RESOLUTION -u user bash /home/user/scripts/linux_start.sh &
 f_echo "Started container"
 sleep 7
 f_echo "Starting VNC viewer"

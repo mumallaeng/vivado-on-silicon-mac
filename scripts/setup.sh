@@ -185,10 +185,20 @@ fi
 # Set VNC resolution
 f_echo "Set the resolution of the container. Keep in mind that high resolutions might make text and images appear small."
 f_echo "You can change the resolution manually in the vnc_resolution file later."
-f_echo "Press enter to leave the default (1920x1080) or type in your preference:"
+f_echo "Press enter to leave the default (1920x1080), type 'auto' to match the main host display at launch time, or type in your preference:"
 read resolution
-# if resolution has the right format
-if [[ $resolution =~ "^[0-9]+x[0-9]+$" ]]
+resolution=$(printf '%s' "$resolution" | tr -d "\n\r\t ")
+resolution_mode=$(printf '%s' "$resolution" | tr '[:upper:]' '[:lower:]')
+if [[ "$resolution_mode" == "auto" ]]
+then
+	if auto_resolution=$(detect_host_vnc_resolution)
+	then
+		f_echo "Setting automatic resolution detection (currently $auto_resolution on the main display)"
+	else
+		f_echo "Setting automatic resolution detection"
+	fi
+	echo "auto" > "$script_dir/vnc_resolution"
+elif is_valid_vnc_resolution "$resolution"
 then
 	f_echo "Setting $resolution as resolution"
 	echo "$resolution" > "$script_dir/vnc_resolution"

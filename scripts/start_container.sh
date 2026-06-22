@@ -8,6 +8,7 @@ validate_macos
 
 extra_mount_args=()
 extra_env_args=()
+vitis_volume_name="${VITIS_DOCKER_VOLUME:-xilinx_vitis_2020_2}"
 
 function append_bind_mount {
     local mount_source="$1"
@@ -243,7 +244,7 @@ then
 fi
 
 # run container
-docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H --preserve-env=VIVADO_VNC_RESOLUTION,VIVADO_BOARD_REPO_PATHS,VIVADO_ENABLE_HARDWARE_MANAGER -u user bash /home/user/scripts/linux_start.sh &
+docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" --mount type=volume,source="$vitis_volume_name",target="/opt/Xilinx/Vitis" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H --preserve-env=VIVADO_VNC_RESOLUTION,VIVADO_BOARD_REPO_PATHS,VIVADO_ENABLE_HARDWARE_MANAGER -u user bash /home/user/scripts/linux_start.sh &
 f_echo "Started container"
 sleep 7
 if ! docker ps --format '{{.Names}}' | grep -Fxq vivado_container

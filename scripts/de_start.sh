@@ -15,8 +15,15 @@ vivado_dir=$(find_vivado_dir)
 if [ -n "$vivado_dir" ]
 then
 	cd /home/user || exit 1
-	# Make Vivado connect to the xvcd server running on macOS
-	source "$vivado_dir/settings64.sh"
+	# Make Vivado connect to the xvcd server running on macOS.
+	# If Vitis is installed, source its settings so Vivado can launch Vitis.
+	vitis_settings="/home/user/Xilinx/Vitis/2020.2/settings64.sh"
+	if [ -f "$vitis_settings" ]
+	then
+		source "$vitis_settings"
+	else
+		source "$vivado_dir/settings64.sh"
+	fi
 	if [ "${VIVADO_ENABLE_HARDWARE_MANAGER:-1}" != "0" ]
 	then
 		"$vivado_dir/bin/hw_server" -e "set auto-open-servers     xilinx-xvc:host.docker.internal:2542" &

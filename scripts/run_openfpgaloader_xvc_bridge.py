@@ -5,7 +5,6 @@ import os
 import pty
 import selectors
 import signal
-import socket
 import subprocess
 import sys
 import time
@@ -31,21 +30,6 @@ def append_log(log_handle, message):
     if log_handle is not None:
         log_handle.write(message)
         log_handle.flush()
-
-
-def wait_for_port(port, timeout=10.0):
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        sock = socket.socket()
-        sock.settimeout(0.25)
-        try:
-            sock.connect(("127.0.0.1", port))
-            return True
-        except OSError:
-            time.sleep(0.1)
-        finally:
-            sock.close()
-    return False
 
 
 def main():
@@ -101,9 +85,12 @@ def main():
 
     signal.signal(signal.SIGINT, request_shutdown)
     signal.signal(signal.SIGTERM, request_shutdown)
+    if hasattr(signal, "SIGHUP"):
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)
 
-    if not wait_for_port(args.port):
-        append_log(log_handle, f"ERROR: XVC bridge failed to open port {args.port}\n")
+    time.sleep(1.0)
+    if proc.poll() is not None:
+        append_log(log_handle, f"ERROR: XVC bridge exited before opening port {args.port}\n")
         request_shutdown()
 
     exit_code = 0

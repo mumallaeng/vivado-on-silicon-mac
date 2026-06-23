@@ -26,7 +26,8 @@ then
 	fi
 	if [ "${VIVADO_ENABLE_HARDWARE_MANAGER:-1}" != "0" ]
 	then
-		"$vivado_dir/bin/hw_server" -e "set auto-open-servers     xilinx-xvc:host.docker.internal:2542" &
+		xvc_port="${VIVADO_XVC_PORT:-2542}"
+		"$vivado_dir/bin/hw_server" -s tcp::3121 -e "set auto-open-servers     xilinx-xvc:host.docker.internal:${xvc_port}" &
 	fi
 	"$vivado_dir/bin/vivado" -source /home/user/scripts/vivado_startup.tcl
 else

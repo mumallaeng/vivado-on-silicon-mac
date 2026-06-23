@@ -9,6 +9,7 @@ validate_macos
 extra_mount_args=()
 extra_env_args=()
 vitis_volume_name="${VITIS_DOCKER_VOLUME:-xilinx_vitis_2020_2}"
+docker_shm_size="${VIVADO_DOCKER_SHM_SIZE:-2g}"
 
 function append_bind_mount {
     local mount_source="$1"
@@ -90,6 +91,7 @@ if [ -n "$VIVADO_ENABLE_HARDWARE_MANAGER" ]
 then
     extra_env_args+=(-e "VIVADO_ENABLE_HARDWARE_MANAGER=$VIVADO_ENABLE_HARDWARE_MANAGER")
 fi
+extra_env_args+=(-e "VIVADO_XVC_PORT=$xvc_port")
 
 function openfpgaloader_bridge_running {
     local bridge_pid=""
@@ -164,7 +166,16 @@ function start_openfpgaloader_bridge {
         bridge_cmd+=(--ftdi-channel "$VIVADO_OPENFPGALOADER_FTDI_CHANNEL")
     fi
 
-    "${bridge_cmd[@]}" > /dev/null 2>&1 &
+    if command -v screen > /dev/null 2>&1
+    then
+        local screen_name="vivado_xvc_${xvc_port}"
+        local bridge_shell_cmd="${(j: :)${(q)bridge_cmd[@]}}"
+
+        screen -S "$screen_name" -X quit > /dev/null 2>&1
+        screen -dmS "$screen_name" /bin/zsh -lc "$bridge_shell_cmd"
+    else
+        "${bridge_cmd[@]}" > /dev/null 2>&1 &
+    fi
     sleep 2
     if openfpgaloader_bridge_running
     then
@@ -173,6 +184,15 @@ function start_openfpgaloader_bridge {
         f_echo "Failed to start openFPGALoader XVC bridge. See $openfpgaloader_bridge_log_file"
         exit 1
     fi
+}
+
+function ensure_container_hw_server {
+    if ! docker ps --format '{{.Names}}' | grep -Fxq vivado_container
+    then
+        return 0
+    fi
+
+    docker exec -d vivado_container bash -lc "if ! pgrep -x hw_server > /dev/null 2>&1; then source /home/user/Xilinx/Vivado/2020.2/settings64.sh > /dev/null 2>&1; nohup hw_server -s tcp::3121 -e 'set auto-open-servers xilinx-xvc:host.docker.internal:${xvc_port}' > /home/user/hw_server-xvc.log 2>&1 & fi"
 }
 
 requested_vnc_resolution="${VIVADO_VNC_RESOLUTION:-$(read_vnc_resolution_setting)}"
@@ -226,6 +246,7 @@ then
             fi
         fi
     fi
+    ensure_container_hw_server
     open_vnc_viewer
     exit 0
 fi
@@ -244,7 +265,7 @@ then
 fi
 
 # run container
-docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" --mount type=volume,source="$vitis_volume_name",target="/opt/Xilinx/Vitis" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H --preserve-env=VIVADO_VNC_RESOLUTION,VIVADO_BOARD_REPO_PATHS,VIVADO_ENABLE_HARDWARE_MANAGER -u user bash /home/user/scripts/linux_start.sh &
+docker run --init --rm --name vivado_container --shm-size "$docker_shm_size" --mount type=bind,source="$script_dir/..",target="/home/user" --mount type=volume,source="$vitis_volume_name",target="/opt/Xilinx/Vitis" "${extra_mount_args[@]}" "${extra_env_args[@]}" -p 127.0.0.1:5901:5901 -p 127.0.0.1:3121:3121 --platform linux/amd64 x64-linux sudo -H --preserve-env=VIVADO_VNC_RESOLUTION,VIVADO_BOARD_REPO_PATHS,VIVADO_ENABLE_HARDWARE_MANAGER,VIVADO_XVC_PORT -u user bash /home/user/scripts/linux_start.sh &
 f_echo "Started container"
 sleep 7
 if ! docker ps --format '{{.Names}}' | grep -Fxq vivado_container

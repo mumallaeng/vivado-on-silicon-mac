@@ -23,7 +23,11 @@ scripts/install_bin
 proxy.txt
 scripts/__pycache__/
 start_container.last.log
+start_container.log
+openfpgaloader-xvc.pid
 openfpgaloader-xvc*.log
+hw_server-xvc.log
+xvcd*.log
 tmp_xsetup_cfg/
 usage_statistics_webtalk.*
 hs_err_pid*.log

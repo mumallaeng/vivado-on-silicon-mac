@@ -17,7 +17,16 @@ then
     vnc_resolution="$vnc_default_resolution"
 fi
 
-vncserver -DisconnectClients -NeverShared -nocursor -geometry "$vnc_resolution" -SecurityTypes VncAuth -PasswordFile /home/user/.vnc/passwd -localhost no -verbose -fg -RawKeyboard -RemapKeys "0xffe9->0xff7e,0xffe7->0xff7e" -- LXDE
+if [ -f /tmp/.X1-lock ]
+then
+    lock_pid=$(tr -d '[:space:]' < /tmp/.X1-lock)
+    if [ -z "$lock_pid" ] || ! ps -p "$lock_pid" -o comm= 2>/dev/null | grep -q '^Xtigervnc$'
+    then
+        rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 /home/user/.vnc/"$(hostname):5901".pid
+    fi
+fi
+
+vncserver :1 -DisconnectClients -NeverShared -nocursor -geometry "$vnc_resolution" -SecurityTypes VncAuth -PasswordFile /home/user/.vnc/passwd -localhost no -verbose -fg -RawKeyboard -RemapKeys "0xffe9->0xff7e,0xffe7->0xff7e" -- LXDE
 # explanation (see also TigerVNC manual):
 #
 # -DisconnectClients -NeverShared:

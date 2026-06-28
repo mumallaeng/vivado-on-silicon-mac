@@ -36,7 +36,12 @@ then
 		xvc_port="${VIVADO_XVC_PORT:-2542}"
 		"$vivado_dir/bin/hw_server" -s tcp::3121 -e "set auto-open-servers     xilinx-xvc:host.docker.internal:${xvc_port}" &
 	fi
-	"$vivado_dir/bin/vivado" -source /home/user/scripts/vivado_startup.tcl
+	env -u LD_PRELOAD \
+		LIBGL_ALWAYS_SOFTWARE=1 \
+		MESA_LOADER_DRIVER_OVERRIDE=llvmpipe \
+		LIBGL_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri \
+		QT_X11_NO_MITSHM=1 \
+		"$vivado_dir/bin/vivado" -source /home/user/scripts/vivado_startup.tcl
 else
 	f_echo "The installation is incomplete."
 	wait_for_user_input

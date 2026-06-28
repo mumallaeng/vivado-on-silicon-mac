@@ -19,7 +19,8 @@ RUN apt-get install -y --no-install-recommends \
     dbus dbus-x11 x11-utils xorg alsa-utils mesa-utils net-tools \
     libgl1-mesa-dri gtk2-engines lxappearance fonts-droid-fallback sudo firefox \
     ubuntu-gnome-default-settings curl gnupg lxde arc-theme \
-    gtk2-engines-murrine gtk2-engines-pixbuf gnome-themes-standard nano xterm
+    gtk2-engines-murrine gtk2-engines-pixbuf gnome-themes-standard nano xterm \
+    autocutsel xclip xsel
 
 # install dependencies for Vivado
 RUN apt-get install -y --no-install-recommends \
@@ -30,6 +31,12 @@ RUN apt-get install -y --no-install-recommends \
 # install vnc server (with recommended installs)
 RUN apt-get install -y \
     tigervnc-standalone-server tigervnc-xorg-extension
+
+# Vitis 2020.2 MicroBlaze bare-metal tools reference a legacy build-host
+# interpreter path. Keep that path available when the Xilinx volume is mounted.
+RUN mkdir -p /proj/esdt_sdk/mbodapati/2020.1_yocto_work/validation_tools/20200708/baremetal/x86_64/lin/sysroots && \
+    ln -s /home/user/Xilinx/Vitis/2020.2/gnu/microblaze/lin/x86_64-oesdk-linux \
+    /proj/esdt_sdk/mbodapati/2020.1_yocto_work/validation_tools/20200708/baremetal/x86_64/lin/sysroots/x86_64-oesdk-linux
 
 # create user "user" with password "password"
 RUN useradd --create-home --shell /bin/bash --user-group --groups adm,sudo user
